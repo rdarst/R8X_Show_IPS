@@ -3,10 +3,10 @@ Simple script to export all IPS protections to a CSV file so that you can compar
 
 The script will login as root via the -r true flag and the login will occur as Read-Only.  Please add credentails here if you need an autorized user to execute these commands.
 
-The IPS data will be output as a CSV file with the name "IPS_Output_Version_{{ IPS DB Version }}".  
+The IPS data will be output as a CSV file with the name "IPS_Output_Version_{{ IPS DB Version }}.csv".  
 
 ```
-Example - IPS_Output_Version_635158746
+Example - IPS_Output_Version_635158746.csv
 ```
 
 The fields "Industry-Reference" will be output using ; as a delimiter.  If no "Industry-Reference" is provided in the JSON output it will be replaced with "None"
@@ -33,6 +33,9 @@ Example output from a MDS system
 ```
 [Expert@MDS1:0]# bash show_ips Global
 Logging into CMA ==> Global
+
+New IPS file name is IPS_Output_Version_635158746.csv
+
 Logging out of CMA/SmartCenter
 OK
 ```
