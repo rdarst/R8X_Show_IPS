@@ -5,10 +5,15 @@ The script will login as root via the -r true flag and the login will occur as R
 
 The IPS data will be output as a CSV file with the name "IPS_Output_Version_{{ IPS DB Version }}".  
 
-The fields "Industry-Reference" will be output using ; as a delimiter.  If no "Industry-Reference" is provided in the JSON output it will be replaced with "None"
-
 ```
 Example - IPS_Output_Version_635158746
+```
+
+The fields "Industry-Reference" will be output using ; as a delimiter.  If no "Industry-Reference" is provided in the JSON output it will be replaced with "None"
+
+The CSV file is output with the following format:
+```
+uid, name, severity, confidence-level, release-date, update-date, follow-up, performance-impact, industry-reference
 ```
 
 To use, move the script to your management server, make it executable and run the following command for a SmartCenter
