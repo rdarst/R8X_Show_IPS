@@ -1,0 +1,68 @@
+#!/bin/bash
+
+if [ "$1" == "" ]; then
+    echo "Error - use the format show_ips DOMAIN"
+    echo "Use the domain SMARTCENTER for a SmartCenter Management Install"
+    exit 1
+fi
+
+CMA=$1
+JQ=${CPDIR}/jq/jq
+
+mgmt_cli_query () {
+
+ JQ=${CPDIR}/jq/jq
+ FINISHED=false
+ ITERATIONS=0
+ LIMIT="0"
+ OFFSET="0"
+ OBJECTS=""
+
+ while [ $FINISHED == false ]
+        do
+
+          OFFSET=$[$LIMIT*$ITERATIONS]
+          OUTPUT=$(mgmt_cli "$@" offset $OFFSET)
+
+          if [ $? -ne 0 ]; then
+                        echo $OUTPUT
+                        exit 1
+          fi
+
+          TOTAL=$(echo ${OUTPUT} | ${JQ} .total )
+          FROM=$(echo ${OUTPUT} | ${JQ} .from )
+          RECEIVED_OBJ=$(echo ${OUTPUT} | ${JQ} .to )
+          OBJECTS+=$(echo ${OUTPUT} | ${JQ} .protections[])
+          OBJECTS+=$'\n'
+
+          if (($TOTAL == $RECEIVED_OBJ)); then
+                FINISHED=true
+          fi
+
+          if [ "$LIMIT" -eq "0" ]; then
+                LIMIT=$RECEIVED_OBJ
+          fi
+          let ITERATIONS=$ITERATIONS+1
+ done
+
+ echo "${OBJECTS}" | ${JQ} -s .
+}
+
+#Login to R8X.X either MDS to Smartcenter
+if [ "${CMA}" == "SMARTCENTER" ]; then
+  echo "Logging into SmartCenter"
+  SID=$(mgmt_cli -r true login read-only true --format json |jq -r '.sid')
+else
+  echo "Logging into CMA ==> $CMA"
+  SID=$(mgmt_cli -r true login domain "$CMA" read-only true --format json |jq -r '.sid')
+fi
+
+#Get Current IPS version
+VERSION=$(mgmt_cli show-ips-status -f json --session-id $SID|jq -r '."installed-version"')
+
+RESULT=$(mgmt_cli_query show-threat-protections limit 250 -f json details-level full --session-id $SID)
+IPS_Data=$(echo "$RESULT" |jq -r '.[] | [.name, .severity, ."confidence-level",."release-date", ."update-date", ."follow-up", (."industry-reference" // ["None"] |join("; "))] |@csv')
+echo "$IPS_Data" > IPS_Output_Version_${VERSION}
+
+echo "Logging out of CMA/SmartCenter"
+mgmt_cli logout --session-id $SID --format json | ${JQ} -r '.message'
