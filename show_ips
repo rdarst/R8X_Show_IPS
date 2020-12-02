@@ -61,8 +61,10 @@ fi
 VERSION=$(mgmt_cli show-ips-status -f json --session-id $SID|jq -r '."installed-version"')
 
 RESULT=$(mgmt_cli_query show-threat-protections limit 250 -f json details-level full --session-id $SID)
-IPS_Data=$(echo "$RESULT" |jq -r '.[] | [.uid, .name, .severity, ."confidence-level",."release-date", ."update-date", ."follow-up", (."industry-reference" // ["None"] |join("; "))] |@csv')
-echo "$IPS_Data" > IPS_Output_Version_${VERSION}
-
+IPS_Data=$(echo "$RESULT" |jq -r '.[] | [.uid, .name, .severity, ."confidence-level",."release-date", ."update-date", ."follow-up", ."performance-impact", (."industry-reference" // ["None"] |join("; "))] |@csv')
+echo "$IPS_Data" > IPS_Output_Version_${VERSION}.csv
+echo
+echo "New IPS file name is IPS_Output_Version_${VERSION}.csv"
+echo
 echo "Logging out of CMA/SmartCenter"
 mgmt_cli logout --session-id $SID --format json | ${JQ} -r '.message'
